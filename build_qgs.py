@@ -40,18 +40,19 @@ def make_qgs(qml, input):
                'albedo': os.path.join(input, 'albedo_at_sur.img'),
                'et_rf': os.path.join(input, 'ETRF', 'et_rf.img')}
 
+    keys = ['cold', 'hot', 'hot_pixels', 'cold_pixels', 'region_mask', 'ndvi', 'ts', 'albedo', 'et_rf']
+
     QgsApplication.setPrefixPath(PATH, True)
     qgs = QgsApplication([], False)
     qgs.initQgis()
 
-    # start a project
     project = QgsProject.instance()
+    project.read(QFileInfo(os.path.join(qml, 'qgis_template.qgs')))
     project_path = QFileInfo(os.path.join(input, 'calbration_map.qgs'))
     for key, path in rasters.items():
         layer = QgsRasterLayer(path)
         if not layer.isValid():
             print("file {} is not a valid raster file".format(path))
-        layer.loadNamedStyle(os.path.join(qml, key, '.qml'))
         QgsMapLayerRegistry.instance().addMapLayer(layer)
 
     for key, path in shapes.items():
@@ -59,11 +60,13 @@ def make_qgs(qml, input):
         path = fileInfo.filePath()
         baseName = fileInfo.baseName()
         layer = QgsVectorLayer(path, baseName, 'ogr')
-        layer.loadNamedStyle(os.path.join(qml, key, '.qml'))
         if not layer.isValid():
             print("file {} is not a valid vector file".format(path))
 
         QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+    for layer, name in zip(QgsMapLayerRegistry.instance().mapLayers().values(), keys):
+        layer.loadNamedStyle(os.path.join(qml, '{}{}'.format(qml, '.qml')))
 
     project.write(project_path)
     qgs.exitQgis()
