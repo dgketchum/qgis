@@ -28,18 +28,17 @@ from qgis.core import QgsRasterLayer, QgsVectorLayer
 from PyQt4.QtCore import QFileInfo
 
 
-def make_qgs(template, input):
-
+def make_qgs(qml, input):
     shapes = {'cold': os.path.join(input, 'PIXELS', 'cold.shp'),
-           'hot': os.path.join(input, 'PIXELS', 'hot.shp')}
+              'hot': os.path.join(input, 'PIXELS', 'hot.shp')}
 
     rasters = {'hot_pixels': os.path.join(input, 'PIXEL_REGIONS', 'hot_pixel_suggestion.img'),
-           'cold_pixels': os.path.join(input, 'PIXEL_REGIONS', 'cold_pixel_suggestion.img'),
-           'region_mask': os.path.join(input, 'PIXEL_REGIONS', 'region_mask.img'),
-           'ndvi': os.path.join(input, 'INDICES', 'ndvi_toa.img'),
-           'ts': os.path.join(input, 'ts.img'),
-           'albedo': os.path.join(input, 'albedo_at_sur.img'),
-           'et_rf': os.path.join(input, 'ETRF', 'et_rf.img')}
+               'cold_pixels': os.path.join(input, 'PIXEL_REGIONS', 'cold_pixel_suggestion.img'),
+               'region_mask': os.path.join(input, 'PIXEL_REGIONS', 'region_mask.img'),
+               'ndvi': os.path.join(input, 'INDICES', 'ndvi_toa.img'),
+               'ts': os.path.join(input, 'ts.img'),
+               'albedo': os.path.join(input, 'albedo_at_sur.img'),
+               'et_rf': os.path.join(input, 'ETRF', 'et_rf.img')}
 
     QgsApplication.setPrefixPath(PATH, True)
     qgs = QgsApplication([], False)
@@ -52,11 +51,15 @@ def make_qgs(template, input):
         layer = QgsRasterLayer(path)
         if not layer.isValid():
             print("file {} is not a valid raster file".format(path))
-
+        layer.loadNamedStyle(os.path.join(qml, key, '.qml'))
         QgsMapLayerRegistry.instance().addMapLayer(layer)
 
     for key, path in shapes.items():
-        layer = QgsVectorLayer(path)
+        fileInfo = QFileInfo(path)
+        path = fileInfo.filePath()
+        baseName = fileInfo.baseName()
+        layer = QgsVectorLayer(path, baseName, 'ogr')
+        layer.loadNamedStyle(os.path.join(qml, key, '.qml'))
         if not layer.isValid():
             print("file {} is not a valid vector file".format(path))
 
@@ -70,6 +73,5 @@ if __name__ == '__main__':
     home = os.path.expanduser('~')
     path = os.path.join(home, 'IrrigationGIS', 'tests', 'qgis')
     folder = os.path.join(path, 'LC08_041027_20150807')
-    template = os.path.join(path, 'qgis_template.qgs')
-    make_qgs(template, folder)
+    make_qgs(path, folder)
 # ========================= EOF ====================================================================
