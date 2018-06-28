@@ -16,12 +16,52 @@
 
 # PYTHONPATH = / < qgispath > / share / qgis / python
 import os
+
 home = os.path.expanduser('~')
-path = os.path.join('miniconda2', 'envs', 'qgis', 'share', 'qgis', 'python')
+path = os.path.join(home, 'miniconda2', 'envs', 'qgis', 'share', 'qgis', 'python')
 import sys
+
 sys.path.append(path)
-import qgis.core
+
+from xml.dom.minidom import Document
+import string
+import os
+import sys
+from qgis.core import *
+from qgis.gui import *
+from PyQt4.QtCore import *
+from PyQt4.QtGui import QApplication
+from PyQt4.QtXml import *
+
+
+def make_qgs(template, input):
+
+    QGISAPP = QgsApplication(sys.argv, True)
+    QgsApplication.setPrefixPath(os.path.dirname(input), True)
+    QgsApplication.initQgis()
+    QgsProject.instance().setFileName(template)
+    print QgsProject.instance().fileName()
+
+    for file1 in os.listdir(r"C:\myprojects\world"):
+        if file1.endswith('.shp'):
+            layer = QgsVectorLayer(r"C:\myprojects\world" + r"\\" + file1, file1, "ogr")
+            print file1
+            print layer.isValid()
+            # Add layer to the registry
+            QgsMapLayerRegistry.instance().addMapLayer(layer)
+
+    QgsProject.instance().write()
+    QgsApplication.exitQgis()
+
+    add_Layers()
+
+    return None
+
 
 if __name__ == '__main__':
-    pass
+    home = os.path.expanduser('~')
+    path = os.path.join(home, 'IrrigationGIS', 'tests', 'qgis')
+    folder = os.path.join(path, 'LC08_041027_20150807')
+    template = os.path.join(path, 'qgis_template.qgs')
+    make_qgs(template, folder)
 # ========================= EOF ====================================================================
