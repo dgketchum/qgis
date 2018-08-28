@@ -19,9 +19,8 @@ from xmltodict import parse, unparse
 
 
 def modify_qgs(template, input):
-    existing_map = os.path.join(template, 'qgs_template.qgs')
 
-    document_file = open(existing_map)
+    document_file = open(template)
     original_doc = document_file.read()
     document_file.close()
 
@@ -57,4 +56,5 @@ if __name__ == '__main__':
     dirs = [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(os.path.join(path, x))]
     for d in dirs:
         modify_qgs(path, d)
+
 # ========================= EOF ====================================================================
