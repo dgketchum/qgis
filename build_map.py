@@ -53,8 +53,12 @@ def modify_qgs(template, input):
 if __name__ == '__main__':
     home = os.path.expanduser('~')
     path = os.path.join(home, 'IrrigationGIS', 'tests', 'qgis')
-    dirs = [os.path.join(path, x) for x in os.listdir(path) if os.path.isdir(os.path.join(path, x))]
-    for d in dirs:
-        modify_qgs(path, d)
+    t = os.path.join(path, 'qgs_template.qgs')
+    targets = []
+    for r, d, f in os.walk(path):
+        if 'ETRF' in d:
+            targets.append(r)
+            print(r)
+            modify_qgs(t, r)
 
 # ========================= EOF ====================================================================
