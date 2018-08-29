@@ -26,8 +26,9 @@ def modify_qgs(template, input):
         for elem in root.getiterator():
             try:
                 elem.text = elem.text.replace(
-                    'source="/home/dgketchum/IrrigationGIS/tests/qgis/LC08_041027_20150807',
-                    'source="{}"'.format(input))
+                    '/home/dgketchum/IrrigationGIS/tests/qgis/LC08_041027_20150807/ts.img',
+                    '/home/dgketchum/IrrigationGIS/tests/qgis/LC08_041027_20160825/ts.img')
+
             except AttributeError:
                 pass
 
