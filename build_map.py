@@ -24,27 +24,10 @@ def modify_qgs(template, input):
     original_doc = document_file.read()
     document_file.close()
 
-    qgs = parse(original_doc)
-    key = qgs['qgis']['layer-tree-group']['layer-tree-layer']
+    original_doc.replace('source="/home/dgketchum/IrrigationGIS/tests/qgis/LC08_041027_20150807',
+                         '')
 
-    sources = {'cold': os.path.join(input, 'PIXELS', 'cold.shp'),
-               'hot': os.path.join(input, 'PIXELS', 'hot.shp'),
-               'hot_pixel_suggestion': os.path.join(input, 'PIXEL_REGIONS',
-                                                    'hot_pixel_suggestion.img'),
-               'cold_pixel_suggestion': os.path.join(input, 'PIXEL_REGIONS',
-                                                     'cold_pixel_suggestion.img'),
-               'region_mask': os.path.join(input, 'PIXEL_REGIONS', 'region_mask.img'),
-               'ndvi_toa': os.path.join(input, 'INDICES', 'ndvi_toa.img'),
-               'ts': os.path.join(input, 'ts.img'),
-               'albedo_at_sur': os.path.join(input, 'albedo_at_sur.img'),
-               'et_rf': os.path.join(input, 'ETRF', 'et_rf.img')}
-
-    for item in key:
-        name = item['@name']
-        path = sources[name]
-        item['@source'] = path
-
-    output = os.path.join(input, 'calbration_map.qgs')
+    output = os.path.join(input, '{}_calbration_map.qgs'.format(os.path.basename(input)))
     new_data = unparse(qgs)
     with open(output, 'w') as f:
         f.write(new_data)
@@ -58,7 +41,7 @@ if __name__ == '__main__':
     for r, d, f in os.walk(path):
         if 'ETRF' in d:
             targets.append(r)
-            print(r)
+            print(r, d, f)
             modify_qgs(t, r)
 
 # ========================= EOF ====================================================================
