@@ -15,22 +15,25 @@
 # ===============================================================================
 
 import os
-from xmltodict import parse, unparse
+import lxml.etree as et
 
 
 def modify_qgs(template, input):
+    with open(template) as f:
+        tree = et.parse(f)
+        root = tree.getroot()
 
-    document_file = open(template)
-    original_doc = document_file.read()
-    document_file.close()
-
-    original_doc.replace('source="/home/dgketchum/IrrigationGIS/tests/qgis/LC08_041027_20150807',
-                         '')
+        for elem in root.getiterator():
+            try:
+                elem.text = elem.text.replace(
+                    'source="/home/dgketchum/IrrigationGIS/tests/qgis/LC08_041027_20150807',
+                    'source="{}"'.format(input))
+            except AttributeError:
+                pass
 
     output = os.path.join(input, '{}_calbration_map.qgs'.format(os.path.basename(input)))
-    new_data = unparse(qgs)
-    with open(output, 'w') as f:
-        f.write(new_data)
+
+    tree.write(output, xml_declaration=True, method='xml', encoding="utf8")
 
 
 if __name__ == '__main__':
