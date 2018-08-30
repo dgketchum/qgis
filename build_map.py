@@ -31,8 +31,6 @@ def modify_qgs(template, input_loc):
                'albedo_at_sur': os.path.join(input_loc, 'albedo_at_sur.img'),
                'et_rf': os.path.join(input_loc, 'ETRF', 'et_rf.img')}
 
-    rep_rt = '/home/dgketchum/IrrigationGIS/tests/qgis/LC08_041027_20150807/ts.img'
-    xp = '//qgis/layer-tree-group/layer-tree-layer'
     with open(template) as f:
         tree = et.parse(f)
         root = tree.getroot()
