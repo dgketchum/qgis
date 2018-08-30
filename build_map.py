@@ -35,9 +35,11 @@ def modify_qgs(template, input_loc):
         tree = et.parse(f)
         root = tree.getroot()
         for key, val in sources.items():
-            item = tree.xpath("//qgis/layer-tree-group/layer-tree-layer[@name='{}']".format(key))
-            for s in item:
+            items = tree.xpath("//qgis/layer-tree-group/layer-tree-layer[@name='{}']".format(key))
+            layers = tree.xpath("//maplayer/datasource[starts-with(text(), {})]".format(input_loc))
+            for s, l in zip(items, layers):
                 s.attrib['source'] = val
+                l.text = val
 
     output = os.path.join(input_loc, '{}_calbration_map.qgs'.format(os.path.basename(input_loc)))
     tree.write(output, xml_declaration=True, method='xml', encoding="utf8", pretty_print=True)
@@ -53,4 +55,4 @@ if __name__ == '__main__':
             targets.append(r)
             modify_qgs(t, r)
 
-# ========================= EOF ====================================================================
+# ========================= EOF ===================================================
