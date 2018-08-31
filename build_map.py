@@ -17,7 +17,10 @@
 import os
 import re
 import lxml.etree as et
+from unicodedata import normalize
 
+def n(_str, form='NFC'):
+    return normalize(form, _str)
 
 def modify_qgs(template, input_loc):
     sources = {'cold': os.path.join(input_loc, 'PIXELS', 'cold.shp'),
@@ -42,8 +45,9 @@ def modify_qgs(template, input_loc):
                 s.attrib['source'] = val
 
         string = et.tostring(tree)
-
-        string = re.sub(r"{}".format(os.path.dirname(txt)), r"%s" % input_loc, string)
+        rep =  str(os.path.dirname(txt))
+        inp = str(input_loc).replace('\\', '/')
+        string = re.sub(r"{}".format(rep), r"%s" % inp, string)
 
     output = os.path.join(input_loc, '{}_calbration_map.qgs'.format(os.path.basename(input_loc)))
     with open(output, 'w') as out_file:
@@ -53,8 +57,8 @@ def modify_qgs(template, input_loc):
 
 if __name__ == '__main__':
     home = os.path.expanduser('~')
-    path = os.path.join(home, 'IrrigationGIS', 'tests', 'qgis')
-    t = os.path.join(path, 'qgs_template.qgs')
+    path = os.path.join('D:\\', 'pyMETRIC', 'lolo')
+    t = os.path.join('D:\\', 'pyMETRIC', 'qgis', 'qgs_template.qgs')
     targets = []
     for r, d, f in os.walk(path):
         if 'ETRF' in d:
