@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import os
+import re
 import lxml.etree as et
 
 
@@ -31,18 +32,23 @@ def modify_qgs(template, input_loc):
                'albedo_at_sur': os.path.join(input_loc, 'albedo_at_sur.img'),
                'et_rf': os.path.join(input_loc, 'ETRF', 'et_rf.img')}
 
-    with open(template) as f:
-        tree = et.parse(f)
-        root = tree.getroot()
+    with open(template) as _file:
+        tree = et.parse(_file)
+        txt = tree.xpath("//maplayer/datasource[contains(text(), 'albedo_at_sur.img')]")[0].text
+
         for key, val in sources.items():
             items = tree.xpath("//qgis/layer-tree-group/layer-tree-layer[@name='{}']".format(key))
-            layers = tree.xpath("//maplayer/datasource[starts-with(text(), {})]".format(input_loc))
-            for s, l in zip(items, layers):
+            for s in items:
                 s.attrib['source'] = val
-                l.text = val
+
+        string = et.tostring(tree)
+
+        string = re.sub(r"{}".format(os.path.dirname(txt)), r"%s" % input_loc, string)
 
     output = os.path.join(input_loc, '{}_calbration_map.qgs'.format(os.path.basename(input_loc)))
-    tree.write(output, xml_declaration=True, method='xml', encoding="utf8", pretty_print=True)
+    with open(output, 'w') as out_file:
+        for line in string:
+            out_file.write(line)
 
 
 if __name__ == '__main__':
