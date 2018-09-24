@@ -31,7 +31,7 @@ def attribute_shapefile(shp, *results):
 
     agri_schema = {'geometry': 'Polygon',
                    'properties': {
-                       'OBJECTID': 'str',
+                       'OBJECTID': 'int',
                        'Supply': 'str',
                        'Acres': 'float',
                        'System': 'str',
@@ -40,9 +40,9 @@ def attribute_shapefile(shp, *results):
 
     first = True
 
-    for r in results:
-        year = int(r[-8:-4])
-        c = read_csv(r)
+    for res in results[0]:
+        year = int(res[-8:-4])
+        c = read_csv(res)
         c['MONTH'][c['MONTH'] < 4] = nan
         c['MONTH'][c['MONTH'] > 10] = nan
         c.dropna(axis=0, how='any', inplace=True)
@@ -54,26 +54,27 @@ def attribute_shapefile(shp, *results):
                                        'PPT_MM': 'sum',
                                        'PIXELS': 'median'}).reset_index()
 
-        renames = {'NDVI': 'NDVI_mean_{}'.format(year),
-                   'ETRF': 'ETRF_mean_{}'.format(year),
-                   'ETR_MM': 'ETR_mm_{}'.format(year),
-                   'ET_MM': 'ET_mm_{}'.format(year),
-                   'PPT_MM': 'PPT_mm_{}'.format(year)}
+        renames = {'NDVI': 'NDVI_{}'.format(year),
+                   'ETRF': 'ETRF_{}'.format(year),
+                   'ETR_MM': 'ETR_{}'.format(year),
+                   'ET_MM': 'ET_{}'.format(year),
+                   'PPT_MM': 'PPT_{}'.format(year)}
 
         c.rename(columns=renames, inplace=True)
 
         if first:
             df = deepcopy(c)
-            first = False
             s = {int(r['OBJECTID']): int(r['PIXELS']) for i, r in c.iterrows()}
+            first = False
         else:
-            concat([df, c], join='outer')
+            df.drop(columns=['PIXELS', 'OBJECTID'], axis=1, inplace=True)
+            df = concat([df, c], join='outer', axis=1, sort=True)
 
-        schema_dict = {'NDVI_mean_{}'.format(year): 'float',
-                       'ETRF_mean_{}'.format(year): 'float',
-                       'ETR_mm_{}'.format(year): 'float',
-                       'ET_mm_{}'.format(year): 'float',
-                       'PPT_mm_{}'.format(year): 'float'}
+        schema_dict = {'NDVI_{}'.format(year): 'float',
+                       'ETRF_{}'.format(year): 'float',
+                       'ETR_{}'.format(year): 'float',
+                       'ET_{}'.format(year): 'float',
+                       'PPT_{}'.format(year): 'float'}
 
         agri_schema['properties'].update(schema_dict)
 
@@ -103,6 +104,8 @@ if __name__ == '__main__':
     home = os.path.expanduser('~')
 lolo = os.path.join(home, 'IrrigationGIS', 'lolo')
 s = os.path.join(lolo, 'lolo_vector', 'Lolo_Project_Irrigation.shp')
-r = os.path.join(lolo, 'ET', 'LINEAR_ZONES', 'monthly_zonal_stats_2016.csv')
+r = []
+for y in ['2015', '2016']:
+    r.append(os.path.join(lolo, '{}'.format(y), 'ET', 'LINEAR_ZONES', 'monthly_zonal_stats_{}.csv'.format(y)))
 attribute_shapefile(s, r)
 # ========================= EOF ====================================================================
