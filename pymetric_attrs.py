@@ -16,6 +16,7 @@
 
 import os
 from copy import deepcopy
+
 from fiona import collection
 from fiona import open as fopen
 from numpy import nan
@@ -23,7 +24,6 @@ from pandas import read_csv, concat
 
 
 def attribute_shapefile(shp, *results):
-
     df = None
 
     out = shp.replace('.shp', '_pym.shp')
@@ -34,8 +34,7 @@ def attribute_shapefile(shp, *results):
                        'Supply': 'str',
                        'Acres': 'float',
                        'System': 'str',
-                       'Crop': 'str',
-                       'pixels': 'int'}}
+                       'Crop': 'str'}}
 
     first = True
 
@@ -46,8 +45,11 @@ def attribute_shapefile(shp, *results):
         c['MONTH'][c['MONTH'] > 10] = nan
         c.dropna(axis=0, how='any', inplace=True)
 
-        c = c.groupby('OBJECTID').agg({'NDVI': 'mean', 'ETRF': 'mean', 'ETR_MM': 'sum',
-                                       'ET_MM': 'sum', 'PPT_MM': 'sum'}).reset_index()
+        c = c.groupby('OBJECTID').agg({'NDVI': 'mean',
+                                       'ETRF': 'mean',
+                                       'ETR_MM': 'sum',
+                                       'ET_MM': 'sum',
+                                       'PPT_MM': 'sum'}).reset_index()
 
         renames = {'NDVI': 'NDVI_mean_{}'.format(year),
                    'ETRF': 'ETRF_mean_{}'.format(year),
@@ -63,13 +65,14 @@ def attribute_shapefile(shp, *results):
         else:
             concat([df, c], join='outer')
 
-        dct = {'NDVI_mean_{}'.format(year): 'float',
-               'ETRF_mean_{}'.format(year): 'float',
-               'ETR_mm_{}'.format(year): 'float',
-               'ET_mm_{}'.format(year): 'float',
-               'PPT_mm_{}'.format(year): 'float'}
+        schema_dict = {'NDVI_mean_{}'.format(year): 'float',
+                       'ETRF_mean_{}'.format(year): 'float',
+                       'ETR_mm_{}'.format(year): 'float',
+                       'ET_mm_{}'.format(year): 'float',
+                       'PPT_mm_{}'.format(year): 'float'}
 
-        agri_schema['properties'].update(dct)
+        agri_schema['properties'].update(schema_dict)
+
 
     with fopen(shp, 'r') as src:
         src_crs = src.crs
@@ -78,13 +81,15 @@ def attribute_shapefile(shp, *results):
         with collection(out, mode='w', driver=src_driver,
                         schema=agri_schema, crs=src_crs) as output:
             for rec in src:
+                props = {'OBJECTID': rec['properties']['OBJECTID'],
+                          'Supply': rec['properties']['Supply_Sou'],
+                          'Acres': rec['properties']['Acres'],
+                          'System': rec['properties']['System_Typ'],
+                          'Crop': rec['properties']['Crop_Type']}
+                props.update(df[df['OBJECTID'] == rec['properties']['OBJECTID']].to_dict('records')[0])
+
                 output.write({'geometry': rec['geometry'],
-                              'properties': {
-                                  'OBJECTID': rec['properties']['OBJECTID'],
-                                  'Supply': rec['properties']['Supply_Sou'],
-                                  'Acres': rec['properties']['Acres'],
-                                  'System': rec['properties']['System_Typ'],
-                                  'Crop': rec['properties']['Crop_Type']}})
+                              'properties': props})
 
 
 if __name__ == '__main__':
