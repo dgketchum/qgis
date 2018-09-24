@@ -31,7 +31,6 @@ def attribute_shapefile(shp, *results):
 
     agri_schema = {'geometry': 'Polygon',
                    'properties': {
-                       'OBJECTID': 'int',
                        'Supply': 'str',
                        'Acres': 'float',
                        'System': 'str',
