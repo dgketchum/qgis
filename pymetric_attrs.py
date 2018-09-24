@@ -20,11 +20,12 @@ from copy import deepcopy
 from fiona import collection
 from fiona import open as fopen
 from numpy import nan
-from pandas import read_csv, concat
+from pandas import read_csv, concat, Series
 
 
 def attribute_shapefile(shp, *results):
     df = None
+    s = None
 
     out = shp.replace('.shp', '_pym.shp')
 
@@ -34,7 +35,8 @@ def attribute_shapefile(shp, *results):
                        'Supply': 'str',
                        'Acres': 'float',
                        'System': 'str',
-                       'Crop': 'str'}}
+                       'Crop': 'str',
+                       'PIXELS': 'int'}}
 
     first = True
 
@@ -49,7 +51,8 @@ def attribute_shapefile(shp, *results):
                                        'ETRF': 'mean',
                                        'ETR_MM': 'sum',
                                        'ET_MM': 'sum',
-                                       'PPT_MM': 'sum'}).reset_index()
+                                       'PPT_MM': 'sum',
+                                       'PIXELS': 'median'}).reset_index()
 
         renames = {'NDVI': 'NDVI_mean_{}'.format(year),
                    'ETRF': 'ETRF_mean_{}'.format(year),
@@ -62,6 +65,7 @@ def attribute_shapefile(shp, *results):
         if first:
             df = deepcopy(c)
             first = False
+            s = Series(c['PIXELS'], index=c['OBJECTID'])
         else:
             concat([df, c], join='outer')
 
@@ -73,7 +77,6 @@ def attribute_shapefile(shp, *results):
 
         agri_schema['properties'].update(schema_dict)
 
-
     with fopen(shp, 'r') as src:
         src_crs = src.crs
         src_driver = src.driver
@@ -82,14 +85,16 @@ def attribute_shapefile(shp, *results):
                         schema=agri_schema, crs=src_crs) as output:
             for rec in src:
                 props = {'OBJECTID': rec['properties']['OBJECTID'],
-                          'Supply': rec['properties']['Supply_Sou'],
-                          'Acres': rec['properties']['Acres'],
-                          'System': rec['properties']['System_Typ'],
-                          'Crop': rec['properties']['Crop_Type']}
-                props.update(df[df['OBJECTID'] == rec['properties']['OBJECTID']].to_dict('records')[0])
+                         'Supply': rec['properties']['Supply_Sou'],
+                         'Acres': rec['properties']['Acres'],
+                         'System': rec['properties']['System_Typ'],
+                         'Crop': rec['properties']['Crop_Type']}
 
+                props.update(df[df['OBJECTID'] == rec['properties']['OBJECTID']].to_dict('records')[0])
+                props.update({'PIXELS': int(s.loc[rec['properties']['OBJECTID']])})
                 output.write({'geometry': rec['geometry'],
-                              'properties': props})
+                              'properties': props,
+                              'id': rec['properties']['OBJECTID']})
 
 
 if __name__ == '__main__':
