@@ -20,7 +20,7 @@ from copy import deepcopy
 from fiona import collection
 from fiona import open as fopen
 from numpy import nan
-from pandas import read_csv, concat, Series
+from pandas import read_csv, concat
 
 
 def attribute_shapefile(shp, *results):
