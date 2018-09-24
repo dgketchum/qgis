@@ -31,6 +31,7 @@ def attribute_shapefile(shp, *results):
 
     agri_schema = {'geometry': 'Polygon',
                    'properties': {
+                       'OBJECTID': 'str',
                        'Supply': 'str',
                        'Acres': 'float',
                        'System': 'str',
@@ -64,7 +65,7 @@ def attribute_shapefile(shp, *results):
         if first:
             df = deepcopy(c)
             first = False
-            s = Series(c['PIXELS'], index=c['OBJECTID'])
+            s = {int(r['OBJECTID']): int(r['PIXELS']) for i, r in c.iterrows()}
         else:
             concat([df, c], join='outer')
 
@@ -83,17 +84,19 @@ def attribute_shapefile(shp, *results):
         with collection(out, mode='w', driver=src_driver,
                         schema=agri_schema, crs=src_crs) as output:
             for rec in src:
-                props = {'OBJECTID': rec['properties']['OBJECTID'],
-                         'Supply': rec['properties']['Supply_Sou'],
-                         'Acres': rec['properties']['Acres'],
-                         'System': rec['properties']['System_Typ'],
-                         'Crop': rec['properties']['Crop_Type']}
+                p = rec['properties']
+                props = {'OBJECTID': p['OBJECTID'],
+                         'Supply': p['Supply_Sou'],
+                         'Acres': p['Acres'],
+                         'System': p['System_Typ'],
+                         'Crop': p['Crop_Type']}
 
-                props.update(df[df['OBJECTID'] == rec['properties']['OBJECTID']].to_dict('records')[0])
-                props.update({'PIXELS': int(s.loc[rec['properties']['OBJECTID']])})
+                props.update(df[df['OBJECTID'] == p['OBJECTID']].to_dict('records')[0])
+                props.update({'PIXELS': s[p['OBJECTID']]})
+                props['OBJECTID'] = int(props['OBJECTID'])
                 output.write({'geometry': rec['geometry'],
                               'properties': props,
-                              'id': rec['properties']['OBJECTID']})
+                              'id': p['OBJECTID']})
 
 
 if __name__ == '__main__':
