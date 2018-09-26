@@ -102,10 +102,10 @@ def attribute_shapefile(shp, *results):
 
 if __name__ == '__main__':
     home = os.path.expanduser('~')
-lolo = os.path.join(home, 'IrrigationGIS', 'lolo')
-s = os.path.join(lolo, 'lolo_vector', 'Lolo_Project_Irrigation.shp')
-r = []
-for y in ['2015', '2016']:
-    r.append(os.path.join(lolo, '{}'.format(y), 'ET', 'LINEAR_ZONES', 'monthly_zonal_stats_{}.csv'.format(y)))
-attribute_shapefile(s, r)
+    lolo = os.path.join(home, 'IrrigationGIS', 'lolo')
+    s = os.path.join(lolo, 'lolo_vector', 'Lolo_Project_Irrigation.shp')
+    r = []
+    for y in ['2015', '2016']:
+        r.append(os.path.join(lolo, '{}'.format(y), 'ET', 'LINEAR_ZONES', 'monthly_zonal_stats_{}.csv'.format(y)))
+    attribute_shapefile(s, r)
 # ========================= EOF ====================================================================
