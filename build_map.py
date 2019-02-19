@@ -25,6 +25,8 @@ def n(_str, form='NFC'):
 def modify_qgs(template, input_loc):
     sources = {'cold': os.path.join(input_loc, 'PIXELS', 'cold.shp'),
                'hot': os.path.join(input_loc, 'PIXELS', 'hot.shp'),
+               'Lolo_Project_Irrigation_pym': os.path.join('D:\\', 'pyMETRIC', 'lolo',
+               'study_area', 'Lolo_Project_Irrigation_pym.shp'),
                'hot_pixel_suggestion': os.path.join(input_loc, 'PIXEL_REGIONS',
                                                     'hot_pixel_suggestion.img'),
                'cold_pixel_suggestion': os.path.join(input_loc, 'PIXEL_REGIONS',
@@ -34,7 +36,7 @@ def modify_qgs(template, input_loc):
                'ts': os.path.join(input_loc, 'ts.img'),
                'albedo_at_sur': os.path.join(input_loc, 'albedo_at_sur.img'),
                'et_rf': os.path.join(input_loc, 'ETRF', 'et_rf.img')}
-
+               
     with open(template) as _file:
         tree = et.parse(_file)
         txt = tree.xpath("//maplayer/datasource[contains(text(), 'albedo_at_sur.img')]")[0].text
@@ -48,7 +50,7 @@ def modify_qgs(template, input_loc):
         rep =  str(os.path.dirname(txt))
         inp = str(input_loc).replace('\\', '/')
         string = re.sub(r"{}".format(rep), r"%s" % inp, string)
-
+        
     output = os.path.join(input_loc, '{}_calbration_map.qgs'.format(os.path.basename(input_loc)))
     with open(output, 'w') as out_file:
         for line in string:
@@ -58,11 +60,13 @@ def modify_qgs(template, input_loc):
 if __name__ == '__main__':
     home = os.path.expanduser('~')
     path = os.path.join('D:\\', 'pyMETRIC', 'lolo')
+    year = str(2018)
     t = os.path.join('D:\\', 'pyMETRIC', 'qgis', 'qgs_template.qgs')
     targets = []
     for r, d, f in os.walk(path):
-        if 'ETRF' in d:
+        if 'ETRF' in d and year in r:
             targets.append(r)
-            modify_qgs(t, r)
+            #modify_qgs(t, r)
+    print(targets)
 
 # ========================= EOF ===================================================

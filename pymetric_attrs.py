@@ -104,7 +104,7 @@ if __name__ == '__main__':
     lolo = os.path.join('D:\\', 'pyMETRIC', 'lolo')
     s = os.path.join(lolo, 'study_area', 'Lolo_Project_Irrigation.shp')
     r = []
-    for y in ['2014', '2015', '2016']:
+    for y in ['2014', '2015', '2016', '2018']:
         r.append(os.path.join(lolo, '{}'.format(y), 'ET', 'LINEAR_ZONES', 'monthly_zonal_stats_{}.csv'.format(y)))
     attribute_shapefile(s, r)
 # ========================= EOF ====================================================================
