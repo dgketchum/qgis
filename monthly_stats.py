@@ -30,15 +30,18 @@ def organize_monthly_stats(csv_list):
 
         for m in range(4, 11):
             month = df[df['MONTH'] == m]
-            s = month.loc[month['ETRF'].idxmax()]
+            try:
+                s = month.loc[month['ETRF'].idxmax()]
+            except TypeError:
+                pass
             mdf = mdf.append(s, ignore_index=True)
 
     mdf = mdf[mdf['ETRF'] > 1.05]
-    mdf.to_csv('/home/dgketchum/Downloads/Lolo_Irrigation_Debug_2DEC2019.csv')
+    mdf.to_csv('/home/dgketchum/Downloads/Lolo_Irrigation_Debug_16DEC2019.csv')
 
 
 if __name__ == '__main__':
-    d = os.path.join(os.path.dirname(__file__), 'data')
+    d = os.path.join(os.path.dirname(__file__), 'data', 'zonal_7JAN2020')
     files_ = [os.path.join(d, x) for x in os.listdir(d)]
     files_.sort()
     organize_monthly_stats(files_)
